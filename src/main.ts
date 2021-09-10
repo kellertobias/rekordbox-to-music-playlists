@@ -4,11 +4,18 @@ import { updateTracks } from './update-tracks';
 import { updatePlaylists } from './update-playlists';
 import { emptyTrashPlaylistFolder } from "./delete-trash-folder";
 
-const {tracks, playlists: rbPlaylists} = loadRekordbox('')
+var app = Application.currentApplication()
+app.includeStandardAdditions = true
+
+// const libraryFilePath = app.chooseFile({ofType: 'xml', withPrompt: 'Please select your Rekordbox Library'}).toString()
+const libraryFilePath = '/Users/keller/Desktop/library.xml'
+console.log(`Library File: ${libraryFilePath}`)
+
+const {tracks, playlists: rbPlaylists} = loadRekordbox(libraryFilePath)
 
 // Will update Tracks in `tracks`
-const {playlists: musicPlaylists, trash: trashPlaylists} = loadPlaylists()
-emptyTrashPlaylistFolder(trashPlaylists)
+// const {playlists: musicPlaylists, trash: trashPlaylists} = loadPlaylists()
+// emptyTrashPlaylistFolder(trashPlaylists)
 
 // const missingTrackRbIds = loadTracks(tracks)
 

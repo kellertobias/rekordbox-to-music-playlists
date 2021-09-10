@@ -1,5 +1,6 @@
 type get<T> = () => T
 type getSet<T> = ((newValue?: T) => T)
+
 interface FileLocation {
     toString: get<string>
 }
@@ -120,7 +121,7 @@ interface AugmentedMusicPlaylist {
 }
 
 interface ApplicationSystemEvents {
-    open: () => unknown;
+    open: (path: string) => unknown;
     save: () => unknown;
     close: () => unknown;
 
@@ -130,10 +131,36 @@ declare type RekordboxTrackId = string
 
 
 declare interface RekordboxTrack {
-    rbId: RekordboxTrackId
+    TrackID: string
+    Name: string
+    Artist: string
+    Composer: string
+    Album: string
+    Grouping: string
+    Genre: string
+    Kind: string
+    Size: string
+    TotalTime: string
+    DiscNumber: string
+    TrackNumber: string
+    Year: string
+    AverageBpm: string
+    DateAdded: string
+    BitRate: string
+    SampleRate: string
+    Comments: string
+    PlayCount: string
+    Rating: string
+    Location: string
+    Remixer: string
+    Tonality: string
+    Label: string
+    Mix: string
 }
 
 declare interface RekordboxPlaylist {
+    path: string[];
+    name: string;
     tracks: RekordboxTrack[]
 }
 
@@ -141,7 +168,53 @@ declare interface CommonTrack extends RekordboxTrack {
     musicRef?: MusicTrack
 }
 
-declare type CommonTrackId = string
-declare type CommonPlaylistPath = string
+declare type RBLibraryTrackNode = {
+    attr: RekordboxTrack
+}
+
+type RBLibraryPlaylistLeafNode = {
+    Type: 0;
+    Count: number;
+    Name: string;
+}
+
+type RBLibraryPlaylistFolderNode = {
+    Type: 1;
+    Name: string;
+    Entries: number;
+}
+
+type RBLibraryTrackRefNode = {
+    attr: {
+        Key: string;
+    }
+}
+
+declare type RBLibraryPlaylistNode = {
+    attr: RBLibraryPlaylistFolderNode;
+    NODE: RBLibraryPlaylistNode | RBLibraryPlaylistNode[]
+    TRACK: []
+} | {
+    attr: RBLibraryPlaylistLeafNode;
+    TRACK: RBLibraryTrackRefNode | RBLibraryTrackRefNode[];
+    NODE: []
+}
+
 declare function Application(a: 'Music'): ApplicationMusic
 declare function Application(a: 'System Events'): ApplicationSystemEvents
+declare namespace Application {
+    function currentApplication(): {
+        includeStandardAdditions: boolean;
+        pathTo: (path: string) => FileLocation;
+        read: (FileLocation) => string;
+        chooseFile: (params: {
+            ofType: string;
+            withPrompt?: string;
+        }) => FileLocation
+    }
+}
+
+declare type CommonTrackId = string
+declare type CommonPlaylistPath = string
+declare function Path(path: string): FileLocation
+
