@@ -1,0 +1,16 @@
+{
+  "name": "sync-rb-apple-music",
+  "version": "0.1.0",
+  "private": true,
+  "description": "",
+  "scripts": {
+    "build": "webpack",
+    "execute": "webpack && echo '[EXECUTING SCRIPT]' && osascript -l JavaScript build/main-bundle.js"
+  },
+  "devDependencies": {
+    "ts-loader": "^8.0.2",
+    "typescript": "^3.9.7",
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12"
+  }
+}
