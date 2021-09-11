@@ -49,7 +49,7 @@ export const loadTracks = (rekordboxTracks: Record<CommonTrackId, CommonTrack>) 
 }
 
 
-const buildPlaylistPath = (p: MusicPlaylist, depth = 0): string[] => {
+export const buildPlaylistPath = (p: MusicPlaylist, depth = 0): string[] => {
     if(p === null) return [];
     if(depth > MAX_PLAYLIST_DEPTH) return []
     let parentPath : string[]

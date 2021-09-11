@@ -172,6 +172,7 @@ interface ApplicationMusic {
     previousTrack: () => void;
     pause: () => void;
     UserPlaylist: (args?: {name: string, description: string}) => {make: (args?: any) => MusicPlaylist}
+    FolderPlaylist: () => {make: (args?: any) => MusicPlaylist}
 }
 
 interface AugmentedMusicPlaylist {

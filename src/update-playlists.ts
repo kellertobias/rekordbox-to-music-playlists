@@ -1,4 +1,5 @@
 import { PLAYLIST_PATH_SEP, PL_DESCR_SLUG } from "./constants"
+import { createFolder } from "./create-tree";
 import { loadPlaylists } from "./load-music";
 
 const updateSinglePlaylist = (
@@ -25,14 +26,6 @@ const updateSinglePlaylist = (
 
 const music = Application('Music')
 
-
-const createTree = (tree: string[]): MusicPlaylist | null => {
-    if(tree.length <= 1) {
-        return null
-    }
-
-}
-
 export const updatePlaylists = (
     rbPlaylists: Record<CommonPlaylistPath, RekordboxPlaylist>,
     musicPlaylits: Record<CommonPlaylistPath, AugmentedMusicPlaylist>,
@@ -57,8 +50,10 @@ export const updatePlaylists = (
     // Create Playlists in RB but not in Music
     console.log(`Creating ${createPlaylists.length} Playlists not in Music`)
     createPlaylists.forEach(({name, path}) => {
+        console.log(` -> IN ${path.slice(0,-1).join('/')} CREATE ${name}`)
         // Create Folder Tree
-        const folder = createTree(path)
+        const folder = createFolder(path.slice(0,-1))
+        console.log(folder.name())
         
         // Create actual Playlist on correct position
         const playlist = music.UserPlaylist().make()
@@ -73,6 +68,7 @@ export const updatePlaylists = (
     const {playlists} = loadPlaylists()
 
     console.log("Updating Tracks in Playlists")
+
     // Update Tracks of playlist
     Object.keys(playlists).forEach(key => {
         const mp = playlists[key]
