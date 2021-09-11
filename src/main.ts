@@ -12,15 +12,17 @@ const libraryFilePath = '/Users/keller/Desktop/library.xml'
 console.log(`Library File: ${libraryFilePath}`)
 
 const {tracks, playlists: rbPlaylists} = loadRekordbox(libraryFilePath)
+const music = Application('Music')
 
-// Will update Tracks in `tracks`
-// const {playlists: musicPlaylists, trash: trashPlaylists} = loadPlaylists()
-// emptyTrashPlaylistFolder(trashPlaylists)
-
+// Will update Tracks in `tracks` with references to apple music tracks
 // const missingTrackRbIds = loadTracks(tracks)
 
-// // Will update track records in music
-// updateTracks(tracks)
+const {playlists: musicPlaylists, trash: trashPlaylists} = loadPlaylists()
+emptyTrashPlaylistFolder(trashPlaylists)
+
+
+// Will update track records in music
+updateTracks(tracks)
 
 // // Will update playlist records in music
-// updatePlaylists(rbPlaylists, musicPlaylists, tracks)
+updatePlaylists(rbPlaylists, musicPlaylists, tracks)

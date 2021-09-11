@@ -1,13 +1,13 @@
 // Alters the Tracks in rekordboxTracks
 
 import { buildCommonId } from "./common-track-hash"
-import { getTimer, MAX_PLAYLIST_DEPTH, MUSIC_IMPORTED_PLAYLIST_DESCRIPTION_SLUG, startTimer, TRASH_FOLDER_NAME } from "./constants"
+import { getTimer, MAX_PLAYLIST_DEPTH, PL_DESCR_SLUG, PLAYLIST_PATH_SEP, startTimer, TRASH_FOLDER_NAME } from "./constants"
 
 const music = Application('Music')
 
 export const loadTracks = (rekordboxTracks: Record<CommonTrackId, CommonTrack>) => {
     startTimer()
-    console.log("Loading Music Tracks")
+    console.log("[MUSIC]: Loading Music Tracks")
     const musicTracks : Record<CommonTrackId, MusicTrack> = {}
     const missingTrackIds : CommonTrackId[] = []
     // Load all Music Tracks
@@ -25,12 +25,17 @@ export const loadTracks = (rekordboxTracks: Record<CommonTrackId, CommonTrack>) 
     })
     console.log(`[MUSIC]: ${count} tracks loaded`)
 
-    console.log("Matching for Rekordbox Tracks")
+    console.log("[MUSIC]: Matching for Rekordbox Tracks")
     Object.keys(rekordboxTracks).forEach(commonKey => {
         const musicTrack = musicTracks[commonKey]
         const track = rekordboxTracks[commonKey]
-        if(!musicTrack || !track) {
+        if(!musicTrack) {
             missingTrackIds.push(commonKey)
+            // console.log(` - Missing: ${commonKey}`)
+            return
+        }
+
+        if(!track) {
             return
         }
 
@@ -59,7 +64,7 @@ const buildPlaylistPath = (p: MusicPlaylist, depth = 0): string[] => {
 
 export const loadPlaylists = () => {
     startTimer()
-    console.log("Loading Playlists")
+    console.log("[MUSIC]: Loading Playlists")
     const playlists : Record<CommonPlaylistPath, AugmentedMusicPlaylist> = {}
     const trash: AugmentedMusicPlaylist[] = []
     let count = 0;
@@ -73,12 +78,12 @@ export const loadPlaylists = () => {
             return
         }
 
-        if(!`${p.description()}`.includes(MUSIC_IMPORTED_PLAYLIST_DESCRIPTION_SLUG)) {
+        if(!`${p.description()}`.includes(PL_DESCR_SLUG)) {
             return
         }
         matchCount = matchCount + 1
         
-        playlists[playlistPath.join('/>/')] = {playlist: p, path: playlistPath}
+        playlists[playlistPath.join(PLAYLIST_PATH_SEP)] = {playlist: p, path: playlistPath}
     })
 
     console.log(`[MUSIC]: ${matchCount}/${count} playlists are managed by Rekordbox`)

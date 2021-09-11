@@ -101,7 +101,8 @@ interface MusicPlaylist extends MusicObject {
     disloked: getSet<boolean>
     parent: getSet<MusicPlaylist>;
     tracks: get<MusicTrack[]>;
-    playlistPath?: string[]
+    playlistPath?: string[];
+    add: (param: any) => void
 }
 
 interface ApplicationMusic {
@@ -112,7 +113,7 @@ interface ApplicationMusic {
     nextTrack: () => void;
     previousTrack: () => void;
     pause: () => void;
-
+    UserPlaylist: (args: {name: string, description: string}) => MusicPlaylist
 }
 
 interface AugmentedMusicPlaylist {
@@ -130,7 +131,7 @@ interface ApplicationSystemEvents {
 declare type RekordboxTrackId = string
 
 
-declare interface RekordboxTrack {
+declare interface RekordboxTrackNodeAttributes {
     TrackID: string
     Name: string
     Artist: string
@@ -139,23 +140,27 @@ declare interface RekordboxTrack {
     Grouping: string
     Genre: string
     Kind: string
-    Size: string
-    TotalTime: string
-    DiscNumber: string
-    TrackNumber: string
+    Size: number
+    TotalTime: number
+    DiscNumber: number
+    TrackNumber: number
     Year: string
-    AverageBpm: string
+    AverageBpm: number
     DateAdded: string
     BitRate: string
     SampleRate: string
     Comments: string
     PlayCount: string
-    Rating: string
+    Rating: number
     Location: string
     Remixer: string
     Tonality: string
     Label: string
     Mix: string
+}
+
+declare interface RekordboxTrack {
+    rbRef: RekordboxTrackNodeAttributes
 }
 
 declare interface RekordboxPlaylist {
@@ -169,7 +174,7 @@ declare interface CommonTrack extends RekordboxTrack {
 }
 
 declare type RBLibraryTrackNode = {
-    attr: RekordboxTrack
+    attr: RekordboxTrackNodeAttributes
 }
 
 type RBLibraryPlaylistLeafNode = {
@@ -206,7 +211,7 @@ declare namespace Application {
     function currentApplication(): {
         includeStandardAdditions: boolean;
         pathTo: (path: string) => FileLocation;
-        read: (FileLocation) => string;
+        read: (path: FileLocation, options?: any) => string;
         chooseFile: (params: {
             ofType: string;
             withPrompt?: string;
