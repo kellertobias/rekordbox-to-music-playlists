@@ -15,13 +15,13 @@ export const updateTracks = (tracks: Record<CommonTrackId, CommonTrack>) => {
         // Compare Rating & Update
         if(rbRef.Rating != musicRef.rating()) {
             console.log(`- Update Rating of ${rbRef.Name} -- ${JSON.stringify({rb: rbRef.Rating, music: musicRef.rating()})}`)
-            musicRef.rating(rbRef.Rating)
+            musicRef.rating = rbRef.Rating
         }
 
         // Compare BPM & Update
         if(Math.round(rbRef.AverageBpm) != Math.round(musicRef.bpm())) {
             console.log(`- Update BPM of ${rbRef.Name} -- ${JSON.stringify({rb: rbRef.AverageBpm, music: musicRef.bpm()})}`)
-            musicRef.bpm(rbRef.AverageBpm)
+            musicRef.bpm = rbRef.AverageBpm
         }
 
         // Compare Tonality // Grouping & Update

@@ -1,4 +1,4 @@
-import { buildCommonId } from "./common-track-hash"
+import { buildCommonId, decodeHTMLEntities } from "./common-track-hash"
 import { getTimer, PLAYLIST_PATH_SEP, startTimer } from "./constants"
 import * as parser from 'fast-xml-parser';
 import { readFile } from "./load-file";
@@ -68,12 +68,13 @@ export const loadRekordbox = (libraryFile: string): {
             return
         }
         const {Name, Type} = attr
-        const path = [...parentPath, Name]
-        console.log(`- Adding Playlist ${Name} in Path ${path.join('/')}`)
+        const name = decodeHTMLEntities(Name)
+        const path = [...parentPath, name]
+        console.log(`- Adding Playlist ${name} in Path ${path.join('/')}`)
 
         if(Type == 1) {
             const playlist : RekordboxPlaylist = {
-                name: Name,
+                name,
                 path,
                 tracks: (Array.isArray(TRACK) ? TRACK : [TRACK]).map(t => {
                     if(!t || !t.attr) {

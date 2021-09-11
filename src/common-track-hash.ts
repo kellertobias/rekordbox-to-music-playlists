@@ -11,7 +11,7 @@ const entities = {
     'quot': '"'
   }
   
-const decodeHTMLEntities = (text) => {
+export const decodeHTMLEntities = (text) => {
     return text.replace(/&([^;]+);/gm, function (match, entity) {
         return entities[entity] || match
     })
