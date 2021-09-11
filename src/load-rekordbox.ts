@@ -72,6 +72,10 @@ export const loadRekordbox = (libraryFile: string): {
         const path = [...parentPath, name]
         console.log(`- Adding Playlist ${name} in Path ${path.join('/')}`)
 
+        if(name == 'WORKFLOW' && parentPath.length == 0) {
+            return
+        }
+
         if(Type == 1) {
             const playlist : RekordboxPlaylist = {
                 name,

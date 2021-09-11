@@ -57,7 +57,7 @@ export const updatePlaylists = (
         
         // Create actual Playlist on correct position
         const playlist = music.UserPlaylist().make()
-        playlist.name = path.join(PLAYLIST_PATH_SEP)
+        playlist.name = name
         playlist.description = PL_DESCR_SLUG
         if(folder) {
             playlist.move({to: folder})
@@ -73,6 +73,10 @@ export const updatePlaylists = (
     Object.keys(playlists).forEach(key => {
         const mp = playlists[key]
         const rb = rbPlaylists[key]
+        if(!rb) {
+            console.log(`Playlist ${key} was in Music but not in rekordbox. Cannot update.`)
+            return
+        }
         // console.log(JSON.stringify({key, mp, rb}, null, 2))
         const tracks = rb.tracks.map((t: CommonTrack | null) => t?.musicRef).filter(ref => ref !== null)
         updateSinglePlaylist(mp, tracks)
