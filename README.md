@@ -71,7 +71,7 @@ Updating Tracks in Playlists
 
 ```
 
-The Part until "FINAL STAGE" might be quick (around 1-5 Minutes). The part afterwards will be horribly slow (longer playlists might take up to 30 Minutes to sync and apple music might freeze during that time)
+The Part until "FINAL STAGE" might be quick (around 1-5 Minutes). The part afterwards will be horribly slow (longer playlists (500-1500 tracks) might take up to 30 Minutes (per playlist) to sync and apple music might freeze during that time)
 
 ## Develop
 
