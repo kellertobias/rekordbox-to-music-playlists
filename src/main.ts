@@ -8,8 +8,8 @@ import { createFolder } from "./create-tree";
 var app = Application.currentApplication()
 app.includeStandardAdditions = true
 
-// const libraryFilePath = app.chooseFile({ofType: 'xml', withPrompt: 'Please select your Rekordbox Library'}).toString()
-const libraryFilePath = '/Users/keller/Desktop/library.xml'
+const libraryFilePath = app.chooseFile({ofType: 'xml', withPrompt: 'Please select your Rekordbox Library'}).toString()
+// const libraryFilePath = '/Users/keller/Desktop/library.xml'
 console.log(`Library File: ${libraryFilePath}`)
 
 const {tracks, playlists: rbPlaylists} = loadRekordbox(libraryFilePath)

@@ -53,7 +53,7 @@ export const updatePlaylists = (
         console.log(` -> IN ${path.slice(0,-1).join('/')} CREATE ${name}`)
         // Create Folder Tree
         const folder = createFolder(path.slice(0,-1))
-        console.log(folder.name())
+        console.log(folder ? folder.name() : `Folder '${path}' not created`)
         
         // Create actual Playlist on correct position
         const playlist = music.UserPlaylist().make()

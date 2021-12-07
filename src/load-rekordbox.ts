@@ -70,11 +70,12 @@ export const loadRekordbox = (libraryFile: string): {
         const {Name, Type} = attr
         const name = decodeHTMLEntities(Name)
         const path = [...parentPath, name]
-        console.log(`- Adding Playlist ${name} in Path ${path.join('/')}`)
-
-        if(name == 'WORKFLOW' && parentPath.length == 0) {
+        if(name?.startsWith?.('_')) {
+            console.log(`- Ignoring Playlist ${name} in Path ${path.join('/')} - starts with '_'`)
             return
         }
+        console.log(`- Adding Playlist ${name} in Path ${path.join('/')}`)
+
 
         if(Type == 1) {
             const playlist : RekordboxPlaylist = {

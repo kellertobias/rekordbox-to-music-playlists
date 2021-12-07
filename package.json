@@ -5,7 +5,8 @@
   "description": "",
   "scripts": {
     "build": "webpack",
-    "execute": "webpack && echo '[EXECUTING SCRIPT]' && osascript -l JavaScript build/main-bundle.js"
+    "execute": "webpack && echo '[EXECUTING SCRIPT]' && osascript -l JavaScript build/main-bundle.js",
+    "bundle":  "webpack && echo '[BUNDLING SCRIPT]' && osacompile -o Rekordbox-To-Music.app -l JavaScript build/main-bundle.js"
   },
   "devDependencies": {
     "ts-loader": "9.2.5",
