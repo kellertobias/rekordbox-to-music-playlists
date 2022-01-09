@@ -264,6 +264,14 @@ declare type RBLibraryPlaylistNode = {
     NODE: []
 }
 
+declare function delay(time: number): void
+declare function Progress(): void
+declare namespace Progress {
+    const totalUnitCount: number;
+    const completedUnitCount: number;
+    const description: string;
+    const additionalDescription: string | undefined;
+}
 declare function Application(a: 'Music'): ApplicationMusic
 declare function Application(a: 'System Events'): ApplicationSystemEvents
 declare namespace Application {
@@ -274,7 +282,12 @@ declare namespace Application {
         chooseFile: (params: {
             ofType: string;
             withPrompt?: string;
-        }) => FileLocation
+        }) => FileLocation;
+        displayNotification: (message: string, options: {
+            withTitle?: string;
+            subtitle?: string;
+            soundName?: 'default' 
+        }) => void
     }
 }
 

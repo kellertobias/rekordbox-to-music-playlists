@@ -1,25 +1,62 @@
 import { PLAYLIST_PATH_SEP, PL_DESCR_SLUG } from "./constants"
 import { createFolder } from "./create-tree";
 import { loadPlaylists } from "./load-music";
+import notify from "./notify";
+import { ProgressBar } from "./progress";
 
 const updateSinglePlaylist = (
     pnode: AugmentedMusicPlaylist,
-    tracks: MusicTrack[]
+    tracks: MusicTrack[],
+    notifySuffix: string
 ) => {
-    console.log(`[UPDATE] ${pnode.playlist.name()}`)
+    const name = pnode.playlist.name()
+    console.log(`[UPDATE] ${name}`)
+    let count = 0
     // Find and Delete Tracks in Music but not in RB
-    pnode.playlist.tracks().filter(tIn => {
+    const deletionCandidates = pnode.playlist.tracks()
+    ProgressBar.setText({
+        title: `Scanning Playlist ${notifySuffix}: ${name}`, 
+        subtitle: `Check ${deletionCandidates.length} Tracks in Music Playlist if they need to be removed from the playlist.`
+    })
+    ProgressBar.setTotal(deletionCandidates.length)
+    ProgressBar.setCount(0)
+    const tracksToDelete = deletionCandidates.filter(tIn => {
+        count += 1
+        ProgressBar.setCount(count)
         const id = tIn.databaseID();
         return tracks.find(tLib => tLib && tLib.databaseID() == id)
-    }).forEach(t => t.delete())
+    })
+    
+    ProgressBar.setText({
+        title: `Update Playlist ${notifySuffix}: ${name}`,
+        subtitle: `Delete ${tracksToDelete.length} Tracks in Music Playlists that were not in the Rekordbox Playlist.`
+    })
+    ProgressBar.setTotal(deletionCandidates.length)
+    ProgressBar.setCount(0)
+    count = 0
+    tracksToDelete.forEach((t) => {
+        t.delete()
+        count += 1
+        ProgressBar.setCount(count)
+    })
 
+    count = 0
     // Add Track in RB but not in Music
     const currentTracks = pnode.playlist.tracks().map(t => t.databaseID())
-    let count = 0;
-    tracks.filter(t => t !== undefined && currentTracks.indexOf(t.databaseID()) === -1).forEach(t => {
+    const copyTracks = tracks.filter((t) => {
+        return t !== undefined && currentTracks.indexOf(t.databaseID()) === -1
+    })
+    ProgressBar.setText({
+        title: `Update Playlist ${notifySuffix}: ${name}`, 
+        subtitle: `Add ${copyTracks.length} Tracks in Music Playlists that are not in Music`
+    })
+    ProgressBar.setTotal(copyTracks.length)
+    ProgressBar.setCount(0)
+    copyTracks.forEach(t => {
         // @ts-ignore
         t.duplicate({to: pnode.playlist})
         count += 1
+        ProgressBar.setCount(count)
     })
     console.log(`         -> Added ${count} Tracks`)
 }
@@ -43,12 +80,25 @@ export const updatePlaylists = (
           
     // List and Delete Playlists in Music but not in RB
     console.log(`Deleting ${deletePlaylists.length} Playlists not in RB`)
+    ProgressBar.setText({
+        title: `Update Playlist Tree`, 
+        subtitle: `Delete ${deletePlaylists.length} Playlists that are not in Rekordbox anymore`
+    })
+    ProgressBar.setTotal(deletePlaylists.length)
+    ProgressBar.setCount(0)
     deletePlaylists.forEach(({path, playlist}) => {
         playlist.delete()
+        ProgressBar.incCount()
     })
 
     // Create Playlists in RB but not in Music
     console.log(`Creating ${createPlaylists.length} Playlists not in Music`)
+    ProgressBar.setText({
+        title: `Update Playlist Tree`, 
+        subtitle: `Delete ${createPlaylists.length} Playlists that are not in Rekordbox anymore`
+    })
+    ProgressBar.setTotal(createPlaylists.length)
+    ProgressBar.setCount(0)
     createPlaylists.forEach(({name, path}) => {
         console.log(` -> IN ${path.slice(0,-1).join('/')} CREATE ${name}`)
         // Create Folder Tree
@@ -61,6 +111,7 @@ export const updatePlaylists = (
         if(folder) {
             playlist.move({to: folder})
         }
+        ProgressBar.incCount()
     })
 
     // Refetch Playlists to also get the newly created ones
@@ -69,7 +120,10 @@ export const updatePlaylists = (
     console.log("Updating Tracks in Playlists")
 
     // Update Tracks of playlist
-    Object.keys(playlists).forEach(key => {
+    const playlistKeys = Object.keys(playlists)
+    let count = 0
+    playlistKeys.forEach(key => {
+        count += 1
         const mp = playlists[key]
         const rb = rbPlaylists[key]
         if(!rb) {
@@ -78,6 +132,6 @@ export const updatePlaylists = (
         }
         // console.log(JSON.stringify({key, mp, rb}, null, 2))
         const tracks = rb.tracks.map((t: CommonTrack | null) => t?.musicRef).filter(ref => ref !== null)
-        updateSinglePlaylist(mp, tracks)
+        updateSinglePlaylist(mp, tracks, `${count}/${playlistKeys.length}`)
     })
 }

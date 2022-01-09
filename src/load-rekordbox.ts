@@ -2,6 +2,7 @@ import { buildCommonId, decodeHTMLEntities } from "./common-track-hash"
 import { getTimer, PLAYLIST_PATH_SEP, startTimer } from "./constants"
 import * as parser from 'fast-xml-parser';
 import { readFile } from "./load-file";
+import notify from "./notify";
 
 export const loadRekordbox = (libraryFile: string): {
     tracks: Record<CommonTrackId, RekordboxTrack>,
@@ -101,7 +102,6 @@ export const loadRekordbox = (libraryFile: string): {
     library.PLAYLISTS.NODE.NODE.forEach(node => {
         iteratePlaylists(node, [])
     })
-
 
     console.log(`[RB] Loading Rekordbox Library took ${getTimer()} seconds`)
     return {
