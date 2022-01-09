@@ -20,7 +20,9 @@ export const loadTracks = (rekordboxTracks: Record<CommonTrackId, CommonTrack>) 
             artist: t.artist(),
             duration: t.duration()
         })
-
+        if(musicTracks[commonId] !== undefined) {
+            console.log(`Collission: ${commonId}`)
+        }
         musicTracks[commonId] = t
     })
     console.log(`[MUSIC]: ${count} tracks loaded`)
@@ -31,7 +33,7 @@ export const loadTracks = (rekordboxTracks: Record<CommonTrackId, CommonTrack>) 
         const track = rekordboxTracks[commonKey]
         if(!musicTrack) {
             missingTrackIds.push(commonKey)
-            // console.log(` - Missing: ${commonKey}`)
+            console.log(` - Missing: ${commonKey}`)
             return
         }
 

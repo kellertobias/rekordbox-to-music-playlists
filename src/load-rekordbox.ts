@@ -30,7 +30,7 @@ export const loadRekordbox = (libraryFile: string): {
     let count = 0
     library.COLLECTION.TRACK.forEach((trackNode: RBLibraryTrackNode) => {
         const node = trackNode.attr
-        if(['MP3 File'].indexOf(node.Kind) === -1) {
+        if(['MP3 File', 'M4A File'].indexOf(node.Kind) === -1) {
             return
         }
         const track = {rbRef: {
@@ -48,7 +48,9 @@ export const loadRekordbox = (libraryFile: string): {
             artist: Artist,
             duration: TotalTime
         })
-
+        if(tracks[commonId] !== undefined) {
+            console.log(`Collission: ${commonId}`)
+        }
         tracksRB[TrackID] = track
         tracks[commonId] = track
         count += 1

@@ -1,15 +1,16 @@
 import { PLAYLIST_PATH_SEP, PL_DESCR_SLUG } from "./constants"
 import { createFolder } from "./create-tree";
 import { loadPlaylists } from "./load-music";
-import notify from "./notify";
+import notify, { dialog } from "./notify";
 import { ProgressBar } from "./progress";
 
 const updateSinglePlaylist = (
     pnode: AugmentedMusicPlaylist,
-    tracks: MusicTrack[],
+    tracks: {ref: MusicTrack, id: number}[],
     notifySuffix: string
 ) => {
     const name = pnode.playlist.name()
+
     console.log(`[UPDATE] ${name}`)
     let count = 0
     // Find and Delete Tracks in Music but not in RB
@@ -24,14 +25,18 @@ const updateSinglePlaylist = (
         count += 1
         ProgressBar.setCount(count)
         const id = tIn.databaseID();
-        return tracks.find(tLib => tLib && tLib.databaseID() == id)
+        const trackPresent = tracks.find((tLib) => {
+            const otherId = tLib?.id
+            return tLib && otherId == id
+        })
+
+        return !trackPresent
     })
-    
     ProgressBar.setText({
         title: `Update Playlist ${notifySuffix}: ${name}`,
         subtitle: `Delete ${tracksToDelete.length} Tracks in Music Playlists that were not in the Rekordbox Playlist.`
     })
-    ProgressBar.setTotal(deletionCandidates.length)
+    ProgressBar.setTotal(tracksToDelete.length)
     ProgressBar.setCount(0)
     count = 0
     tracksToDelete.forEach((t) => {
@@ -44,7 +49,8 @@ const updateSinglePlaylist = (
     // Add Track in RB but not in Music
     const currentTracks = pnode.playlist.tracks().map(t => t.databaseID())
     const copyTracks = tracks.filter((t) => {
-        return t !== undefined && currentTracks.indexOf(t.databaseID()) === -1
+        const addTrack = t !== undefined && t.ref !== undefined && currentTracks.indexOf(t.id) === -1
+        return addTrack
     })
     ProgressBar.setText({
         title: `Update Playlist ${notifySuffix}: ${name}`, 
@@ -54,11 +60,13 @@ const updateSinglePlaylist = (
     ProgressBar.setCount(0)
     copyTracks.forEach(t => {
         // @ts-ignore
-        t.duplicate({to: pnode.playlist})
+        t.ref.duplicate({to: pnode.playlist})
         count += 1
         ProgressBar.setCount(count)
     })
     console.log(`         -> Added ${count} Tracks`)
+
+    return {added: copyTracks.length, removed: tracksToDelete.length}
 }
 
 const music = Application('Music')
@@ -95,7 +103,7 @@ export const updatePlaylists = (
     console.log(`Creating ${createPlaylists.length} Playlists not in Music`)
     ProgressBar.setText({
         title: `Update Playlist Tree`, 
-        subtitle: `Delete ${createPlaylists.length} Playlists that are not in Rekordbox anymore`
+        subtitle: `Create ${createPlaylists.length} Playlists that are not in Rekordbox anymore`
     })
     ProgressBar.setTotal(createPlaylists.length)
     ProgressBar.setCount(0)
@@ -122,6 +130,8 @@ export const updatePlaylists = (
     // Update Tracks of playlist
     const playlistKeys = Object.keys(playlists)
     let count = 0
+    let addedTotal = 0
+    let removedTotal = 0
     playlistKeys.forEach(key => {
         count += 1
         const mp = playlists[key]
@@ -131,7 +141,17 @@ export const updatePlaylists = (
             return
         }
         // console.log(JSON.stringify({key, mp, rb}, null, 2))
-        const tracks = rb.tracks.map((t: CommonTrack | null) => t?.musicRef).filter(ref => ref !== null)
-        updateSinglePlaylist(mp, tracks, `${count}/${playlistKeys.length}`)
+        const tracks = rb.tracks.map(
+            (t: CommonTrack | null) => {
+                return {
+                    ref: t?.musicRef,
+                    id: t?.musicRef?.databaseID()
+                }
+            }).filter(ref => ref.ref !== null && ref.ref !== undefined)
+        const {added, removed} = updateSinglePlaylist(mp, tracks, `${count}/${playlistKeys.length}`)
+        addedTotal += added
+        removedTotal += removed
     })
+
+    dialog(`Playlist Update Done.\n - ${deletePlaylists.length} Playlists Deleted\n - ${createPlaylists.length} Playlists Created\n - ${addedTotal} Tracks added to Playlists\n - ${removedTotal} Tracks removed from Playlists`)
 }

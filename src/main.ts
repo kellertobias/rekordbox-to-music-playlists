@@ -5,6 +5,7 @@ import { updatePlaylists } from './update-playlists';
 import { emptyTrashPlaylistFolder } from "./delete-trash-folder";
 import { createFolder } from "./create-tree";
 import notify, {dialog} from "./notify";
+import { writeFile } from "./write-file";
 var app = Application.currentApplication()
 app.includeStandardAdditions = true
 
@@ -23,7 +24,9 @@ notify('Apple Music Library', `Loading Tracks... \nThis might take some time`)
 delay(1)
 // Will update Tracks in `tracks` with references to apple music tracks
 const missingTrackRbIds = loadTracks(tracks)
-dialog(`Apple Music Tracks Loaded. ${missingTrackRbIds.length} Tracks could not be matched from Rekordbox.`)
+notify('Apple Music Library', `Apple Music Tracks Loaded. ${missingTrackRbIds.length} Tracks could not be matched from Rekordbox. This is the start of the list: \n${missingTrackRbIds.slice(0, 10).map(t => ` - ${t}`).join('\n')}`)
+writeFile(missingTrackRbIds.join('\n'), `${libraryFilePath}.missing.txt`, {overwriteExistingContent: true})
+delay(10)
 
 notify('Apple Music Library', `Update Music Track Rating and BPM from Rekordbox`)
 delay(1)

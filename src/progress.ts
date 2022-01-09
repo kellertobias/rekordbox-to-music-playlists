@@ -11,19 +11,19 @@ export class ProgressBar {
         //@ts-ignore
         Progress.completedUnitCount = count
         this.count = count
-        console.log(`Setting Progress to ${this.count}/${this.total}`)
     }
 
     public static incCount() {
         this.count += 1
         //@ts-ignore
         Progress.completedUnitCount = this.count
-        console.log(`Setting Progress to ${this.count}/${this.total}`)
     }
     public static setText(text: {title: string, subtitle: string}) {
         //@ts-ignore
         Progress.description = text.title
         //@ts-ignore
         Progress.additionalDescription = text.subtitle
+
+        // console.log(JSON.stringify(text, null, 2))
     }
 }

@@ -21,6 +21,6 @@ export const buildCommonId = ({title, artist, duration} : {title: string, artist
     return JSON.stringify({
         title: decodeHTMLEntities(title.trim()).toLowerCase(),
         artist: decodeHTMLEntities(artist.trim()).toLowerCase(),
-        duration: Math.floor(duration)
-    })
+        duration: Math.round(Math.floor(duration) / 5 ) * 5
+    }).normalize("NFD").replace(/[\u0300-\u036f]/g, "")//.replace(/[^\-A-Za-z0-9{}:"_+,;#&.()'\/\ ]/g, '');
 }
