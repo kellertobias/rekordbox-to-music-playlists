@@ -1,113 +1,124 @@
-import { buildCommonId, decodeHTMLEntities } from "./common-track-hash"
-import { getTimer, PLAYLIST_PATH_SEP, startTimer } from "./constants"
 import * as parser from 'fast-xml-parser';
-import { readFile } from "./load-file";
-import notify from "./notify";
 
-export const loadRekordbox = (libraryFile: string): {
-    tracks: Record<CommonTrackId, RekordboxTrack>,
-    playlists: Record<CommonPlaylistPath, RekordboxPlaylist>
+import { buildCommonId, decodeHTMLEntities } from './common-track-hash';
+import { getTimer, PLAYLIST_PATH_SEP, startTimer } from './constants';
+import { readFile } from './load-file';
+import notify from './notify';
+
+export const loadRekordbox = (
+  libraryFile: string
+): {
+  tracks: Record<CommonTrackId, RekordboxTrack>;
+  playlists: Record<CommonPlaylistPath, RekordboxPlaylist>;
 } => {
-    startTimer()
-    console.log("[RB]: Loading Rekordbox Tracks")
-    const path = Path(libraryFile)
+  startTimer();
+  console.log("[RB]: Loading Rekordbox Tracks");
+  const path = Path(libraryFile);
 
-    const tracksRB : Record<RekordboxTrackId, RekordboxTrack> = {}
-    const tracks : Record<CommonTrackId, RekordboxTrack> = {}
-    const playlists : Record<CommonPlaylistPath, RekordboxPlaylist> = {}
+  const tracksRB: Record<RekordboxTrackId, RekordboxTrack> = {};
+  const tracks: Record<CommonTrackId, RekordboxTrack> = {};
+  const playlists: Record<CommonPlaylistPath, RekordboxPlaylist> = {};
 
-    const sys = Application('System Events')
-    
-    const xmlString = readFile(libraryFile)
+  const sys = Application("System Events");
 
-    const library = parser.parse(xmlString, {
-        attributeNamePrefix : "",
-        attrNodeName: 'attr',
-        ignoreAttributes: false
-    })?.DJ_PLAYLISTS;
+  const xmlString = readFile(libraryFile);
 
-    // Load and Match Tracks
-    let count = 0
-    library.COLLECTION.TRACK.forEach((trackNode: RBLibraryTrackNode) => {
-        const node = trackNode.attr
-        if(['MP3 File', 'M4A File'].indexOf(node.Kind) === -1) {
-            return
-        }
-        const track = {rbRef: {
-            ...node,
-            Size: Number(node.Size),
-            TotalTime: Number(node.TotalTime),
-            DiscNumber: Number(node.DiscNumber),
-            TrackNumber: Number(node.TrackNumber),
-            AverageBpm: Math.round(Number(node.AverageBpm)),
-            Rating: Math.round(Number(node.Rating) * 100 / 255),
-        }}
-        const {Name, Artist, TotalTime, TrackID} = trackNode.attr
-        const commonId = buildCommonId({
-            title: Name,
-            artist: Artist,
-            duration: TotalTime
-        })
-        if(tracks[commonId] !== undefined) {
-            console.log(`Collission: ${commonId}`)
-        }
-        tracksRB[TrackID] = track
-        tracks[commonId] = track
-        count += 1
-    })
+  const library = parser.parse(xmlString, {
+    attributeNamePrefix: "",
+    attrNodeName: "attr",
+    ignoreAttributes: false,
+  })?.DJ_PLAYLISTS;
 
-    console.log(`[RB] Loaded ${count} Tracks from Rekordbox Library`)
+  // Load and Match Tracks
+  let count = 0;
+  library.COLLECTION.TRACK.forEach((trackNode: RBLibraryTrackNode) => {
+    const node = trackNode.attr;
+    if (["MP3 File", "M4A File"].indexOf(node.Kind) === -1) {
+      return;
+    }
+    const track = {
+      rbRef: {
+        ...node,
+        Size: Number(node.Size),
+        TotalTime: Number(node.TotalTime),
+        DiscNumber: Number(node.DiscNumber),
+        TrackNumber: Number(node.TrackNumber),
+        AverageBpm: Math.round(Number(node.AverageBpm)),
+        Rating: Math.round((Number(node.Rating) * 100) / 255),
+      },
+    };
+    const { Name, Artist, TotalTime, TrackID } = trackNode.attr;
+    const commonId = buildCommonId({
+      title: Name,
+      artist: Artist,
+      duration: TotalTime,
+    });
+    if (tracks[commonId] !== undefined) {
+      console.log(`Collission: ${commonId}`);
+    }
+    tracksRB[TrackID] = track;
+    tracks[commonId] = track;
+    count += 1;
+  });
 
-    // Iterate over Playlists
-    const iteratePlaylists = (node: RBLibraryPlaylistNode, parentPath: string[] = []) => {
-        if(!node) {
-            console.log("     -> Playlist Node not set")
-            return
-        }
+  console.log(`[RB] Loaded ${count} Tracks from Rekordbox Library`);
 
-        const {attr, TRACK, NODE} = node
-        if(!attr) {
-            console.log("     -> Attributes Node not set", JSON.stringify(node))
-            return
-        }
-        const {Name, Type} = attr
-        const name = decodeHTMLEntities(Name)
-        const path = [...parentPath, name]
-        if(name?.startsWith?.('_')) {
-            console.log(`- Ignoring Playlist ${name} in Path ${path.join('/')} - starts with '_'`)
-            return
-        }
-        console.log(`- Adding Playlist ${name} in Path ${path.join('/')}`)
-
-
-        if(Type == 1) {
-            const playlist : RekordboxPlaylist = {
-                name,
-                path,
-                tracks: (Array.isArray(TRACK) ? TRACK : [TRACK]).map(t => {
-                    if(!t || !t.attr) {
-                        console.log("     -> Track Node not set", JSON.stringify(t))
-                        return
-                    }
-                    const rbid = t.attr.Key
-                    return tracksRB[rbid] || null
-                })
-            }
-            playlists[path.join(PLAYLIST_PATH_SEP)] = playlist
-        } else {
-            (Array.isArray(NODE) ? NODE : [NODE]).map(nextNode => {
-                iteratePlaylists(nextNode, path)
-            })
-        }
+  // Iterate over Playlists
+  const iteratePlaylists = (
+    node: RBLibraryPlaylistNode,
+    parentPath: string[] = []
+  ) => {
+    if (!node) {
+      console.log("     -> Playlist Node not set");
+      return;
     }
 
-    library.PLAYLISTS.NODE.NODE.forEach(node => {
-        iteratePlaylists(node, [])
-    })
-
-    console.log(`[RB] Loading Rekordbox Library took ${getTimer()} seconds`)
-    return {
-        tracks,
-        playlists
+    const { attr, TRACK, NODE } = node;
+    if (!attr) {
+      console.log("     -> Attributes Node not set", JSON.stringify(node));
+      return;
     }
-}
+    const { Name, Type } = attr;
+    const name = decodeHTMLEntities(Name);
+    const path = [...parentPath, name];
+    if (name?.startsWith?.("_")) {
+      console.log(
+        `- Ignoring Playlist ${name} in Path ${path.join(
+          "/"
+        )} - starts with '_'`
+      );
+      return;
+    }
+    console.log(`- Adding Playlist ${name} in Path ${path.join("/")}`);
+
+    if (Type == 1) {
+      const playlist: RekordboxPlaylist = {
+        name,
+        path,
+        tracks: (Array.isArray(TRACK) ? TRACK : [TRACK]).map((t) => {
+          if (!t || !t.attr) {
+            console.log("     -> Track Node not set", JSON.stringify(t));
+            return;
+          }
+          const rbid = t.attr.Key;
+          return tracksRB[rbid] || null;
+        }),
+      };
+      playlists[path.join(PLAYLIST_PATH_SEP)] = playlist;
+    } else {
+      (Array.isArray(NODE) ? NODE : [NODE]).map((nextNode) => {
+        iteratePlaylists(nextNode, path);
+      });
+    }
+  };
+
+  library.PLAYLISTS.NODE.NODE.forEach((node) => {
+    iteratePlaylists(node, []);
+  });
+
+  console.log(`[RB] Loading Rekordbox Library took ${getTimer()} seconds`);
+  return {
+    tracks,
+    playlists,
+  };
+};
